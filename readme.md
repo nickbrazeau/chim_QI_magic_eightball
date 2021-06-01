@@ -1,6 +1,6 @@
 # Quality Improvement Magic Eightball for Chapel Hill Internal Medicine
 
-This is an incredibly simple "shiny app" that expects a "My Department with Diabetes" report summary from EPIC as input. It then takes that report and "forecasts" patients that will be overdue for their annual A1c, foot exam, and eye exam in the next 30-120 days (user specified). The goal of the program is to catch patients and bring them into clinic before they are overdue, thereby expedieting care! 
+This is an incredibly simple "shiny app" that expects a "My Department with Diabetes" report summary from EPIC as input. It then takes that report and "forecasts" patients that will be overdue for their annual A1c, eye exam, in the next 30-120 days (user specified). The goal of the program is to catch patients and bring them into clinic before they are overdue, thereby expediting care! 
 
 
 <p align="center">

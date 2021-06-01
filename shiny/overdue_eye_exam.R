@@ -1,5 +1,5 @@
 ## .................................................................................
-## Purpose: Capture future A1cs
+## Purpose: Capture future eye exams
 ##
 ## Author: Nick Brazeau
 ##
@@ -7,13 +7,12 @@
 ## .................................................................................
 library(shiny)
 library(DT)
-
 #............................................................
 # User Interface
 #...........................................................
 ui <- fluidPage(
   #  App title ----
-  headerPanel("CHIM A1c Overdue Forecasting"),
+  headerPanel("CHIM Eye Exam Overdue Forecasting"),
 
   # Sidebar panel for inputs ----
   sidebarLayout(
@@ -22,17 +21,17 @@ ui <- fluidPage(
       fileInput("file1", "Choose Excel or CSV File", accept = c(".xlsx", "csv")),
 
       # Input: Filtering Dates ----
-      sliderInput("tto", label = "Days Until A1c Overdue",
+      sliderInput("tto", label = "Days Until Eye Exam Overdue",
                   min = 0, max = 180, value = 30, step = 10),
     ),
 
     # Main panel for displaying outputs ----
     mainPanel(
-      h1("Future Overdue A1c"),
-      DTOutput("A1ctbl_future"),
-      h1("Future and To-Date Overdue A1cs"),
-      DTOutput("A1ctbl_all"),
-      plotOutput("cumA1cplot")
+      h1("Future Overdue Eye Exam"),
+      DTOutput("eyeexamtbl_future"),
+      h1("Future and To-Date Overdue Eye Exams"),
+      DTOutput("eyeexamtbl_all"),
+      plotOutput("cumeyeexamplot")
     )
   )
 
@@ -60,16 +59,16 @@ server <- function(input, output) {
       return(NULL)
     } else if (ext == "xlsx") {
       df <- readxl::read_excel(path = file$datapath) %>%
-        dplyr::select(c("Patient", "MRN", "PCP", "Age", "Last HBA1C Date"))
-      colnames(df)[5] <- "last_a1c_date"
+        dplyr::select(c("Patient", "MRN", "PCP", "Age", "Last eye exam"))
+      colnames(df)[5] <- "last_eye_date"
     } else if (ext == "csv") {
       df <- readr::read_csv(file = file$datapath) %>%
-        dplyr::select(c("Patient", "MRN", "PCP", "Age", "Last HBA1C Date"))
-      colnames(df)[5] <- "last_a1c_date"
+        dplyr::select(c("Patient", "MRN", "PCP", "Age", "Last eye exam"))
+      colnames(df)[5] <- "last_eye_date"
     }
 
     df <- df %>%
-      dplyr::mutate(last_a1c_date = lubridate::dmy(last_a1c_date)) %>%
+      dplyr::mutate(last_eye_date = lubridate::dmy(last_eye_date)) %>%
       magrittr::set_colnames(tolower(colnames(.))) %>%
       dplyr::mutate(age = gsub(" y.o.", "", age),
                     age = as.numeric(age)) %>%
@@ -84,15 +83,15 @@ server <- function(input, output) {
   # get table today to future out
   #......................
   today <- lubridate::ymd(Sys.Date())
-  output$A1ctbl_future <- DT::renderDataTable(
+  output$eyeexamtbl_future <- DT::renderDataTable(
     if (is.null(input$file1)) {
       DT::datatable(data.frame())
     } else {
       DT::datatable(
         mydata() %>%
-          dplyr::filter( (last_a1c_date + 365) <= (today + input$tto)) %>%
-          dplyr::filter( (last_a1c_date >= (today-365)) ) %>%
-          magrittr::set_colnames(c("Patient", "MRN", "PCP", "Age", "Last HBA1C Date")),
+          dplyr::filter( (last_eye_date + 365) <= (today + input$tto)) %>%
+          dplyr::filter( (last_eye_date >= (today-365)) ) %>%
+          magrittr::set_colnames(c("Patient", "MRN", "PCP", "Age", "Last Eye Exam")),
 
         extensions = 'Buttons',
         # thanks to this person https://github.com/rstudio/DT/issues/267
@@ -106,7 +105,7 @@ server <- function(input, output) {
 
           # customize the length menu
           lengthMenu = list( c(10, 20, -1) # declare values
-                               , c(10, 20, "All") # declare titles
+                             , c(10, 20, "All") # declare titles
           ), # end of lengthMenu customization
           pageLength = 10
 
@@ -122,14 +121,14 @@ server <- function(input, output) {
   #......................
   # get table all out
   #......................
-  output$A1ctbl_all <- DT::renderDataTable(
+  output$eyeexamtbl_all <- DT::renderDataTable(
     if (is.null(input$file1)) {
       DT::datatable(data.frame())
     } else {
       DT::datatable(
         mydata() %>%
-          dplyr::filter( (last_a1c_date + 365) <= (today + input$tto)) %>%
-          magrittr::set_colnames(c("Patient", "MRN", "PCP", "Age", "Last HBA1C Date")),
+          dplyr::filter( (last_eye_date + 365) <= (today + input$tto)) %>%
+          magrittr::set_colnames(c("Patient", "MRN", "PCP", "Age", "Last Exam Exam Date")),
 
         extensions = 'Buttons',
 
@@ -159,7 +158,7 @@ server <- function(input, output) {
   #......................
   # Cumulative Incidence Plot
   #......................
-  output$cumA1cplot <- renderPlot({
+  output$cumeyeexamplot <- renderPlot({
     if (is.null(input$file1)) {
       ggplot() +
         theme_void()
@@ -169,7 +168,7 @@ server <- function(input, output) {
         theme_void()
       # plot
       plotdf <- mydata() %>%
-        dplyr::mutate(day_overdue = last_a1c_date + 365,
+        dplyr::mutate(day_overdue = last_eye_date + 365,
                       ticker = 1) %>%
         dplyr::arrange(day_overdue)
       plotdf$ticker <- cumsum(plotdf$ticker)
@@ -193,7 +192,7 @@ server <- function(input, output) {
                                  fontface = "bold") +
         geom_line(data = plotdf,
                   aes(x = day_overdue, ticker)) +
-        ggtitle("Cumulative Incidence of A1c Overdue by Date") +
+        ggtitle("Cumulative Incidence of Eye Exam Overdue by Date") +
         ylab("Cumulative Incidence") +
         xlab("Date") + theme_bw() +
         scale_x_date() +
