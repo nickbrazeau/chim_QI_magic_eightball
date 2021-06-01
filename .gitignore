@@ -1,0 +1,30 @@
+#my sandbox
+sandbox/
+
+# History files
+.Rhistory
+.Rapp.history
+.Rproj.user
+
+# Session Data files
+.RData
+
+# RStudio files
+.Rproj.user/
+
+# knitr and R markdown default cache directories
+/*_cache/
+/cache/
+*png
+
+# Temporary files created by R markdown
+*.utf8.md
+*.knit.md
+
+# knitr outputs
+*.pdf
+*.html
+*.docx
+
+# MAC files
+.DS_Store
